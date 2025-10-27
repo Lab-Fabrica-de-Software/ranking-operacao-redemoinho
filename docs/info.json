@@ -1,0 +1,16 @@
+{
+  "title": "Ranking Operação Redemoinho",
+  "description": "",
+  "status": "in-progress",
+  "image": [],
+  "stacks": [
+    "Next.js",
+    "Storybook"
+  ],
+  "links": [
+    {
+      "name": "Repositório do Jogo",
+      "url": "https://github.com/Lab-Fabrica-de-Software/operacao-redemoinho"
+    }
+  ]
+}
