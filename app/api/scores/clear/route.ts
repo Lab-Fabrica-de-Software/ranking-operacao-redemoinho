@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/app/lib/firebase";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { verifyAdminToken } from "@/app/lib/verifyAdminToken";
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   try {
+    const authError = await verifyAdminToken(req);
+    if (authError) return authError;
+
     const snapshot = await getDocs(collection(db, "scores"));
     const deletions = snapshot.docs.map((d) => deleteDoc(doc(db, "scores", d.id)));
     await Promise.all(deletions);

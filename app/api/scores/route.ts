@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
         if (!playerName || score === undefined || time === undefined) {
             return new Response(
-                JSON.stringify({ message: "Missing required fields" }),
+                JSON.stringify({ error: "Missing required fields" }),
                 { status: 400 }
             );
         }
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
 
         if (!existingSnapshot.empty) {
             return new Response(
-                JSON.stringify({ message: "Player name already exists" }),
+                JSON.stringify({ error: "Player name already exists" }),
                 { status: 400 }
             );
         }
