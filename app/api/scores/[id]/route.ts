@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/app/lib/firebase";
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import { verifyAdminToken } from "@/app/lib/verifyAdminToken";
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     const authError = await verifyAdminToken(req);
