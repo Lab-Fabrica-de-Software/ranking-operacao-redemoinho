@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Ranking } from "@/app/types/score";
 
 interface RankingTableProps {
@@ -15,11 +15,16 @@ export default function RankingTable({
   showUpdateDate = true,
 }: RankingTableProps) {
   const [page, setPage] = useState(1);
-  const pageSize = 10;
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+  const pageSize = 10;
 
-  const isMobile =
-    typeof window !== "undefined" && window.innerWidth < 834;
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 834);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const filteredScores = useMemo(() => {
     if (!searchTerm) return ranking.scores;
@@ -34,15 +39,15 @@ export default function RankingTable({
   const effectivePage = Math.min(Math.max(1, page), totalPages);
 
   const visibleScores = useMemo(() => {
+    if (isMobile) return filteredScores;
     const start = (effectivePage - 1) * pageSize;
     return filteredScores.slice(start, start + pageSize);
-  }, [filteredScores, effectivePage]);
+  }, [filteredScores, effectivePage, isMobile]);
 
   const handlePrev = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
-  const startItem =
-    totalItems === 0 ? 0 : (effectivePage - 1) * pageSize + 1;
+  const startItem = totalItems === 0 ? 0 : (effectivePage - 1) * pageSize + 1;
   const endItem = Math.min(totalItems, effectivePage * pageSize);
 
   const formatTimeInMinutes = (time: number) => {
@@ -54,101 +59,135 @@ export default function RankingTable({
     )} min`;
   };
 
-  return (
+  // 🏆 Função que retorna o emoji conforme a colocação
+  const getPlacementEmoji = (index: number) => {
+    switch (index) {
+      case 1:
+        return "🥇";
+      case 2:
+        return "🥈";
+      case 3:
+        return "🥉";
+      default:
+        return index <= 10 ? "🌪️" : "";
+    }
+  };
 
-    <div className="sm:rounded-xl overflow-hidden sm:border-2 border-[#FF6161]" >
-      <div className="flex flex-row justify-between px-4 py-2 bg-[#D71D1D]">
-        <div className="flex flex-row gap-2 items-center text-white">
-          <span className="font-bold text-lg">{title}</span>
-          {showUpdateDate && !isMobile && ranking.lastUpdated && (
-            <span className="text-sm opacity-90">
-              ({ranking.lastUpdated.toLocaleString('pt-BR')})
-            </span>
-          )}
+  return (
+    <div className="md:w-[80%] mx-auto bg-cover bg-center">
+      <div className="sm:rounded-xl overflow-hidden sm:border-2 border-[#664138]">
+        {/* Cabeçalho */}
+        <div className="flex flex-row justify-between px-4 py-2 bg-[#9D6D47]">
+          <div className="flex flex-row gap-2 items-center text-white">
+            <span className="font-bold text-lg">{title}</span>
+            {showUpdateDate && !isMobile && ranking.lastUpdated && (
+              <span className="text-sm opacity-90">
+                ({ranking.lastUpdated.toLocaleString("pt-BR")})
+              </span>
+            )}
+          </div>
+
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => {
+              setPage(1);
+              setSearchTerm(e.target.value);
+            }}
+            placeholder="Pesquisar"
+            className="px-2 py-1 bg-white rounded-xl text-black text-sm outline-none"
+          />
         </div>
 
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => {
-            setPage(1);
-            setSearchTerm(e.target.value);
-          }}
-          placeholder="Pesquisar"
-          className="px-2 py-1 bg-white rounded-xl text-black text-sm outline-none"
-        />
-      </div>
-
-      <table className="w-full">
-        <thead>
-          <tr className="bg-[#FEEED1] text-black">
-            <th>Colocação</th>
-            <th>Jogador</th>
-            {!isMobile && (
-              <>
+        {/* Tabela */}
+        <table className="w-full">
+          {!isMobile && (
+            <thead>
+              <tr className="bg-[#FEEED1] text-black">
+                <th>Colocação</th>
+                <th>Jogador</th>
                 <th>Tempo</th>
                 <th>Pontuação</th>
-              </>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {visibleScores.length > 0 ? (
-            visibleScores.map((score, i) => {
-              const index = (effectivePage - 1) * pageSize + i + 1;
-              return (
-                <tr
-                  key={`${score.playerName}-${index}`}
-                  className="text-center border-t border-black bg-white text-black"
-                >
-                  <td>#{index}</td>
-                  <td className="font-bold">{score.playerName}</td>
-                  {!isMobile && (
-                    <>
-                      <td>{formatTimeInMinutes(score.time)}</td>
-                      <td>{score.score}</td>
-                    </>
-                  )}
-                </tr>
-              );
-            })
-          ) : (
-            <tr className="text-center border-t border-black bg-white text-black">
-              <td colSpan={isMobile ? 2 : 4}>Nenhum resultado encontrado</td>
-            </tr>
+              </tr>
+            </thead>
           )}
-        </tbody>
-      </table>
 
-      <div className="bg-[#D71D1D] py-4 px-2 flex items-center md:justify-between justify-center">
+          <tbody>
+            {visibleScores.length > 0 ? (
+              visibleScores.map((score, i) => {
+                const index = isMobile
+                  ? i + 1
+                  : (effectivePage - 1) * pageSize + i + 1;
+                const emoji = getPlacementEmoji(index);
+
+                return (
+                  <tr
+                    key={`${score.playerName}-${index}`}
+                    className="text-center border-t border-black bg-white text-black"
+                  >
+                    {isMobile ? (
+                      <td colSpan={2} className="py-2">
+                        <div className="flex flex-col items-center">
+                          <span className="font-bold">
+                            {emoji} #{index} {score.playerName}
+                          </span>
+                          <span className="text-sm text-gray-700">
+                            {formatTimeInMinutes(score.time)} — {score.score} pts
+                          </span>
+                        </div>
+                      </td>
+                    ) : (
+                      <>
+                        <td>
+                          {emoji} #{index}
+                        </td>
+                        <td className="font-bold">{score.playerName}</td>
+                        <td>{formatTimeInMinutes(score.time)}</td>
+                        <td>{score.score}</td>
+                      </>
+                    )}
+                  </tr>
+                );
+              })
+            ) : (
+              <tr className="text-center border-t border-black bg-white text-black">
+                <td colSpan={isMobile ? 2 : 4}>Nenhum resultado encontrado</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {/* Paginação (apenas desktop) */}
         {!isMobile && (
-          <div className="text-white text-sm">
-            Mostrando {startItem}–{endItem} de {totalItems}
+          <div className="bg-[#9D6D47] py-4 px-2 flex items-center md:justify-between justify-center">
+            <div className="text-white text-sm">
+              Mostrando {startItem}–{endItem} de {totalItems}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrev}
+                disabled={page <= 1}
+                className="px-3 py-1 rounded-md text-sm font-medium bg-white text-black disabled:opacity-50 cursor-pointer"
+              >
+                Anterior
+              </button>
+
+              <div className="text-white text-sm">
+                {page} / {totalPages}
+              </div>
+
+              <button
+                onClick={handleNext}
+                disabled={page >= totalPages}
+                className="px-3 py-1 rounded-md text-sm font-medium bg-white text-black disabled:opacity-50 cursor-pointer"
+              >
+                Próximo
+              </button>
+            </div>
           </div>
         )}
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrev}
-            disabled={page <= 1}
-            className="px-3 py-1 rounded-md text-sm font-medium bg-white text-black disabled:opacity-50 cursor-pointer"
-          >
-            Anterior
-          </button>
-
-          <div className="text-white text-sm">
-            {page} / {totalPages}
-          </div>
-
-          <button
-            onClick={handleNext}
-            disabled={page >= totalPages}
-            className="px-3 py-1 rounded-md text-sm font-medium bg-white text-black disabled:opacity-50 cursor-pointer"
-          >
-            Próximo
-          </button>
-        </div>
       </div>
-    </div >
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Image from "next/image";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <div className="bg-[url('/background.png')] bg-cover bg-center h-screen w-full">
+          <Image src="/logo.png" alt="Operação Redemoinho" width={300} height={100} className="mx-auto pt-8 mb-4" />
+          {children}
+        </div>
       </body>
     </html>
   );
