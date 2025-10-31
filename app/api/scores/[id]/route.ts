@@ -7,6 +7,11 @@ export async function DELETE(
   { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
+    const adminKey = req.headers.get("x-admin-key");
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     if (!id) return NextResponse.json({ error: "Missing required params" }, { status: 400 });

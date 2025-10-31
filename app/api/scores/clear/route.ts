@@ -4,6 +4,11 @@ import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 export async function DELETE(req: Request) {
   try {
+    const adminKey = req.headers.get("x-admin-key");
+    if (adminKey !== process.env.ADMIN_KEY) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     const snapshot = await getDocs(collection(db, "scores"));
     const deletions = snapshot.docs.map((d) => deleteDoc(doc(db, "scores", d.id)));
     await Promise.all(deletions);
