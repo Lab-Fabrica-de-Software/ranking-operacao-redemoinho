@@ -4,6 +4,7 @@ export interface Score {
     score: number;
     time: number;
     createdAt?: Date | string;
+    position?: number;
 }
 
 export interface Ranking {

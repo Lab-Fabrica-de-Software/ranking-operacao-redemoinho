@@ -64,7 +64,7 @@ export async function GET() {
     );
     const snapshot = await getDocs(q);
 
-    const scores: Score[] = snapshot.docs.map((doc) => {
+    const scores: Score[] = snapshot.docs.map((doc, index) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -72,6 +72,7 @@ export async function GET() {
         score: data.score,
         time: data.time / 60,
         createdAt: data.createdAt.toDate(),
+        position: index + 1,
       };
     });
 

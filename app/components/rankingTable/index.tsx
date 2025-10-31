@@ -59,9 +59,8 @@ export default function RankingTable({
     )} min`;
   };
 
-  // 🏆 Função que retorna o emoji conforme a colocação
-  const getPlacementEmoji = (index: number) => {
-    switch (index) {
+  const getPlacementEmoji = (position: number) => {
+    switch (position) {
       case 1:
         return "🥇";
       case 2:
@@ -69,7 +68,7 @@ export default function RankingTable({
       case 3:
         return "🥉";
       default:
-        return index <= 10 ? "🌪️" : "";
+        return position <= 10 ? "🌪️" : "";
     }
   };
 
@@ -115,21 +114,19 @@ export default function RankingTable({
           <tbody>
             {visibleScores.length > 0 ? (
               visibleScores.map((score, i) => {
-                const index = isMobile
-                  ? i + 1
-                  : (effectivePage - 1) * pageSize + i + 1;
-                const emoji = getPlacementEmoji(index);
+                const position = score.position ?? i + 1;
+                const emoji = getPlacementEmoji(position);
 
                 return (
                   <tr
-                    key={`${score.playerName}-${index}`}
+                    key={`${score.playerName}-${position}`}
                     className="text-center border-t border-black bg-white text-black"
                   >
                     {isMobile ? (
                       <td colSpan={2} className="py-2">
                         <div className="flex flex-col items-center">
                           <span className="font-bold">
-                            {emoji} #{index} {score.playerName}
+                            {emoji} #{position} {score.playerName}
                           </span>
                           <span className="text-sm text-gray-700">
                             {formatTimeInMinutes(score.time)} — {score.score} pts
@@ -139,7 +136,7 @@ export default function RankingTable({
                     ) : (
                       <>
                         <td>
-                          {emoji} #{index}
+                          {emoji} #{position}
                         </td>
                         <td className="font-bold">{score.playerName}</td>
                         <td>{formatTimeInMinutes(score.time)}</td>
@@ -157,7 +154,6 @@ export default function RankingTable({
           </tbody>
         </table>
 
-        {/* Paginação (apenas desktop) */}
         {!isMobile && (
           <div className="bg-[#9D6D47] py-4 px-2 flex items-center md:justify-between justify-center">
             <div className="text-white text-sm">
