@@ -75,7 +75,6 @@ export default function RankingTable({
   return (
     <div className="md:w-[80%] mx-auto bg-cover bg-center">
       <div className="sm:rounded-xl overflow-hidden sm:border-2 border-[#664138]">
-        {/* Cabeçalho */}
         <div className="flex flex-row justify-between px-4 py-2 bg-[#9D6D47]">
           <div className="flex flex-row gap-2 items-center text-white">
             <span className="font-bold text-lg">{title}</span>
@@ -98,7 +97,6 @@ export default function RankingTable({
           />
         </div>
 
-        {/* Tabela */}
         <table className="w-full">
           {!isMobile && (
             <thead>
@@ -120,7 +118,7 @@ export default function RankingTable({
                 return (
                   <tr
                     key={`${score.playerName}-${position}`}
-                    className="text-center border-t border-black bg-white text-black"
+                    className="text-center border-t border-black/50 bg-white text-black"
                   >
                     {isMobile ? (
                       <td colSpan={2} className="py-2">
@@ -147,7 +145,7 @@ export default function RankingTable({
                 );
               })
             ) : (
-              <tr className="text-center border-t border-black bg-white text-black">
+              <tr className="text-center border-t border-black/50 bg-white text-black">
                 <td colSpan={isMobile ? 2 : 4}>Nenhum resultado encontrado</td>
               </tr>
             )}

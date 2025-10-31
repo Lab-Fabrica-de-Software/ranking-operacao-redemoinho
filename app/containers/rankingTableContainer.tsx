@@ -1,14 +1,20 @@
 "use client";
-import { useEffect } from "react";
 
-import { Ranking } from "@/app/types/score";
+import { useEffect } from "react";
 import useSWR from "swr";
+import { Ranking } from "@/app/types/score";
 import RankingTable from "../components/rankingTable";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function RankingTableContainer() {
-    const { data, mutate } = useSWR<Ranking>("/api/scores", fetcher);
+interface Props {
+    initialData: Ranking;
+}
+
+export default function RankingTableContainer({ initialData }: Props) {
+    const { data, mutate } = useSWR<Ranking>("/api/scores", fetcher, {
+        fallbackData: initialData, // usa os dados do server sem loading
+    });
 
     useEffect(() => {
         const events = new EventSource("/api/scores/events");
@@ -17,14 +23,8 @@ export default function RankingTableContainer() {
             mutate();
         });
 
-        return () => {
-            events.close();
-        };
+        return () => events.close();
     }, [mutate]);
 
-    if (!data) {
-        return <div>Loading...</div>;
-    }
-
-    return <RankingTable ranking={data} />;
+    return <RankingTable ranking={data!} />;
 }
