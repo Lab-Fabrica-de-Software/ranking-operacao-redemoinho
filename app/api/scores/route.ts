@@ -55,26 +55,35 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const q = query(
-      collection(db, "scores"),
-      orderBy("score", "desc"),
-      orderBy("time", "asc")
-    );
+    const { searchParams } = new URL(req.url);
+    const playerName = searchParams.get("playerName")?.toLowerCase();
+
+    const q = query(collection(db, "scores"), orderBy("score", "desc"), orderBy("time", "asc"));
     const snapshot = await getDocs(q);
 
-    const scores: Score[] = snapshot.docs.map((doc, index) => {
+    if (snapshot.empty) { 
+      return NextResponse.json({ message: "No results found." }, { status: 404 });
+    }
+
+    let scores: Score[] = snapshot.docs.map((doc, index) => {
       const data = doc.data();
       return {
         id: doc.id,
         playerName: data.playerName,
         score: data.score,
         time: data.time / 60,
-        createdAt: data.createdAt.toDate(),
+        createdAt: data.createdAt?.toDate(),
         position: index + 1,
       };
     });
+
+    if (playerName) {
+      scores = scores.filter(score =>
+        score.playerName.toLowerCase().includes(playerName)
+      );
+    }
 
     const ranking: Ranking = {
       scores,
@@ -83,7 +92,7 @@ export async function GET() {
 
     return NextResponse.json(ranking, { status: 200 });
   } catch (error) {
-    console.log("Error fetching scores:", error);
+    console.error("Error fetching scores:", error);
     return NextResponse.json({ error: "Failed to fetch scores" }, { status: 500 });
   }
 }
