@@ -1,9 +1,20 @@
-import Example from "./components/example";
+import RankingTableContainer from "./containers/rankingTableContainer";
+import { Ranking } from "./types/score";
 
-export default function Home() {
+
+async function getScores(): Promise<Ranking> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/scores`, {
+    cache: "no-store", 
+  });
+  return res.json();
+}
+
+export default async function Home() {
+  const initialData = await getScores();
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Ranking dos Jogadores da Opração Redemoinho</h1>
-    </div>
+    <main>
+      <RankingTableContainer initialData={initialData}/>
+    </main>
   );
 }
